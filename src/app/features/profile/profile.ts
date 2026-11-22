@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService, Usuario } from '../../shared/services/auth.service';
-import { AdminService, AdminEnvio } from '../../shared/services/admin.service';
+import { AdminService, AdminEnvio, nombreEstadoEnvio } from '../../shared/services/admin.service';
 
 @Component({
   selector: 'app-profile',
@@ -29,6 +29,10 @@ export class Profile implements OnInit {
     if (this.user) {
       this.loadHistorial();
     }
+  }
+
+  estadoNombre(envio: AdminEnvio): string {
+    return envio.Estado_Nombre || envio.Estado_Actual || nombreEstadoEnvio(envio.Estado_Envio_Id);
   }
 
   loadHistorial() {

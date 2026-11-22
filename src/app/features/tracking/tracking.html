@@ -55,7 +55,7 @@
 
         <div class="status-summary" style="text-align:center; margin-top: 2rem;">
           <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem; font-weight: 600;">
-            Estado: <span [ngStyle]="{'color': envioData.Estado_Envio_Id === 6 ? '#e3000f' : '#28a745'}">{{ envioData.Estado_Nombre }}</span>
+            Estado: <span [ngStyle]="{'color': envioData.Estado_Envio_Id === 6 ? '#e3000f' : '#28a745'}">{{ estadoNombre() }}</span>
           </h3>
           @if (envioData.Estado_Envio_Id !== 6 && envioData.Estado_Envio_Id !== 5) {
             <p style="color: #666; font-weight: 500;">

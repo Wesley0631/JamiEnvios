@@ -20,6 +20,9 @@
       <a routerLink="/servicios" routerLinkActive="active" (click)="closeMenu()">
         Servicios
       </a>
+      <a routerLink="/" fragment="preguntas-frecuentes" (click)="closeMenu()">
+        Preguntas frecuentes
+      </a>
       <a routerLink="/rastreo" routerLinkActive="active" (click)="closeMenu()">
         Rastreo
       </a>
@@ -53,9 +56,11 @@
         </a>
       }
 
-      <a class="cta-link" routerLink="/contacto" (click)="closeMenu()">
-        Solicita Cotización
-      </a>
+      @if (!isAdmin && !isEmployee) {
+        <a class="cta-link" routerLink="/contacto" (click)="closeMenu()">
+          Solicita Cotización
+        </a>
+      }
     </nav>
   </div>
 </header>

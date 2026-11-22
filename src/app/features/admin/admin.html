@@ -39,7 +39,10 @@
           </div>
         </div>
         <div class="recent-shipments">
-          <div class="section-header"><h2>Últimos Envíos Registrados</h2></div>
+          <div class="section-header">
+            <h2>Últimos Envíos Registrados</h2>
+            <button class="btn btn-secondary" type="button" (click)="loadEnvios()">Actualizar</button>
+          </div>
           <div class="table-responsive">
             <table class="admin-table">
               <thead>
@@ -50,7 +53,7 @@
                   <td class="id-col">{{ envio.Numero_Guia }}</td>
                   <td>{{ envio.Nombre_Cliente }}</td>
                   <td>{{ envio.Destino }}</td>
-                  <td><span class="status-badge" [ngClass]="'status-' + (envio.Estado_Nombre || envio.Estado_Actual || '').toLowerCase().replace(' ', '-')">{{ envio.Estado_Nombre || envio.Estado_Actual }}</span></td>
+                  <td><span class="status-badge" [ngClass]="'status-' + estadoNombre(envio).toLowerCase().replace(' ', '-')">{{ estadoNombre(envio) }}</span></td>
                   <td>{{ envio.Nombre_Recibe || 'N/A' }}</td> 
                   <td>{{ envio.Cedula_Recibe || 'N/A' }}</td>
                 </tr>
@@ -143,8 +146,8 @@
           <td>{{ envio.Fecha_Recepcion | date:'shortDate' }}</td>
           <td>{{ envio.Destino }}</td>
           <td>
-            <span class="status-badge" [ngClass]="'status-' + (envio.Estado_Nombre || envio.Estado_Actual || '').toLowerCase().replace(' ', '-')">
-              {{ envio.Estado_Nombre || envio.Estado_Actual }}
+            <span class="status-badge" [ngClass]="'status-' + estadoNombre(envio).toLowerCase().replace(' ', '-')">
+              {{ estadoNombre(envio) }}
             </span>
           </td>
           <td>{{ envio.Observaciones || 'N/A' }}</td>
@@ -447,4 +450,3 @@
     </div>
   </main>
 </div>
-

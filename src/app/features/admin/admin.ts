@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AdminService, AdminUsuario, AdminEnvio } from '../../shared/services/admin.service';
+import { AdminService, AdminUsuario, AdminEnvio, nombreEstadoEnvio } from '../../shared/services/admin.service';
 import { Employee } from '../employee/employee';
 
 @Component({
@@ -33,7 +33,7 @@ export class Admin implements OnInit {
     guia: '',
     cliente: '',
     recibe: '',
-    estado: 'Activos',
+    estado: '',
     destino: '',
     direccion: '',
     fechaInicio: '',
@@ -105,12 +105,19 @@ export class Admin implements OnInit {
 
   setTab(tab: 'dashboard' | 'envios' | 'usuarios' | 'empleado' | 'empleados_list' | 'facturas' | 'crear_envio') {
     this.activeTab = tab;
+    if (tab === 'dashboard' || tab === 'envios') {
+      this.loadEnvios();
+    }
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: { tab },
       queryParamsHandling: 'merge',
       replaceUrl: true
     });
+  }
+
+  estadoNombre(envio: AdminEnvio): string {
+    return envio.Estado_Nombre || envio.Estado_Actual || nombreEstadoEnvio(envio.Estado_Envio_Id);
   }
 
   loadEnvios() {
@@ -150,7 +157,7 @@ export class Admin implements OnInit {
   }
 
   resetEnviosFilters() {
-    this.enviosFilters = { guia: '', cliente: '', recibe: '', estado: 'Activos', destino: '', direccion: '', fechaInicio: '', fechaFin: '' };
+    this.enviosFilters = { guia: '', cliente: '', recibe: '', estado: '', destino: '', direccion: '', fechaInicio: '', fechaFin: '' };
     this.loadEnvios();
   }
 
@@ -244,7 +251,7 @@ export class Admin implements OnInit {
           const envio = this.envios.find(e => e.Id === id);
           if (envio) {
             envio.Estado_Envio_Id = estadoIdNum;
-            envio.Estado_Nombre = this.estadosValidos.find(e => e.id === estadoIdNum)?.nombre || '';
+            envio.Estado_Nombre = nombreEstadoEnvio(estadoIdNum);
           }
           if (++done + errs === ids.length) this.finalizeBulkAdmin(done, errs);
         },
@@ -364,7 +371,6 @@ export class Admin implements OnInit {
         this.creandoEnvio = false;
         alert('Envío registrado exitosamente');
         this.nuevoEnvio = {};
-        this.loadEnvios(); // Reload list
         this.setTab('envios'); // Redirect to envios list
       },
       error: (err) => {

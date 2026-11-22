@@ -1,6 +1,7 @@
 import { Component, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { nombreEstadoEnvio } from '../../shared/services/admin.service';
 
 @Component({
   selector: 'app-tracking',
@@ -27,6 +28,10 @@ export class Tracking {
 
   constructor(private cdr: ChangeDetectorRef, private zone: NgZone) {}
 
+  estadoNombre(): string {
+    return this.envioData?.Estado_Nombre || nombreEstadoEnvio(this.envioData?.Estado_Envio_Id);
+  }
+
   onSearch() {
     const query = this.searchQuery.trim();
     if (!query) return;
@@ -44,7 +49,10 @@ export class Tracking {
       })
       .then(data => {
         this.zone.run(() => {
-          this.envioData = data;
+          this.envioData = {
+            ...data,
+            Estado_Nombre: data.Estado_Nombre || nombreEstadoEnvio(data.Estado_Envio_Id)
+          };
 
           const fecha = new Date(data.Fecha_Recepcion);
           const estimada = new Date(fecha);

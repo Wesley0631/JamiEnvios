@@ -6,7 +6,7 @@
 
   <div class="card">
     <div class="card-header">
-      <h2>Envíos en Curso</h2>
+      <h2>Envíos Registrados</h2>
       <button class="btn btn-outline" (click)="loadEnvios()">🔄 Actualizar</button>
     </div>
     <div class="card-body">
@@ -68,8 +68,8 @@
               <td>{{ envio.Fecha_Recepcion | date:'dd/MM/yyyy' }}</td>
               <td>
                 <span class="status-badge"
-                  [class]="(envio.Estado_Nombre || envio.Estado_Actual || '').toLowerCase().replace(' ', '-')">
-                  {{ envio.Estado_Nombre || envio.Estado_Actual }}
+                  [class]="estadoNombre(envio).toLowerCase().replace(' ', '-')">
+                  {{ estadoNombre(envio) }}
                 </span>
               </td>
               <td>

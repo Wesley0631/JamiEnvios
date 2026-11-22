@@ -85,7 +85,7 @@
       </div>
 
       <div class="company-photo">
-        <img src="https://images.unsplash.com/photo-1578574577315-3fbeb0cecdc2?auto=format&fit=crop&w=900&q=80"
+        <img src="/Equipo.jpg"
           alt="Equipo JAMI" />
       </div>
     </div>
@@ -126,6 +126,22 @@
         <h3>{{ item.title }}</h3>
         <p>{{ item.text }}</p>
         <a class="text-link" [routerLink]="item.link">Ver sección →</a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section-space faq-section" id="preguntas-frecuentes">
+  <div class="container">
+    <div class="section-heading">
+      <h2>Preguntas frecuentes</h2>
+      <p>Todo lo que necesitas saber antes de realizar tu envío desde Barcelona a la República Dominicana.</p>
+    </div>
+
+    <div class="faq-list">
+      <article class="faq-card" *ngFor="let item of faqs" tabindex="0">
+        <h3><span aria-hidden="true">{{ item.icon }}</span> {{ item.question }}</h3>
+        <p>{{ item.answer }}</p>
       </article>
     </div>
   </div>

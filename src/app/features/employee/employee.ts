@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { AdminService, AdminEnvio, AdminUsuario } from '../../shared/services/admin.service';
+import { AdminService, AdminEnvio, AdminUsuario, nombreEstadoEnvio } from '../../shared/services/admin.service';
 import { AuthService } from '../../shared/services/auth.service';
 
 @Component({
@@ -52,6 +52,10 @@ export class Employee implements OnInit {
     this.loadClientes();
   }
 
+  estadoNombre(envio: AdminEnvio): string {
+    return envio.Estado_Nombre || envio.Estado_Actual || nombreEstadoEnvio(envio.Estado_Envio_Id);
+  }
+
   loadClientes() {
     this.clientesLoading = true;
     this.adminService.getUsuarios({ nombre: this.filtroCliente }).subscribe({
@@ -77,7 +81,7 @@ export class Employee implements OnInit {
     this.adminService.getEnvios().subscribe({
       next: (data) => {
         this.ngZone.run(() => {
-          this.enviosActivos = data.filter(e => e.Estado_Envio_Id !== 5 && e.Estado_Envio_Id !== 6);
+          this.enviosActivos = data;
           this.selectedIds.clear(); // Clear selection on reload
           this.loading = false;
           this.cdr.detectChanges();
@@ -100,13 +104,7 @@ export class Employee implements OnInit {
     this.adminService.updateEstadoEnvio(envio.Id, estadoIdNum).subscribe({
       next: () => {
         envio.Estado_Envio_Id = estadoIdNum;
-        envio.Estado_Nombre = this.estadosValidos.find(e => e.id === estadoIdNum)?.nombre || '';
-        if (estadoIdNum === 5 || estadoIdNum === 6) {
-          setTimeout(() => {
-            this.enviosActivos = this.enviosActivos.filter(e => e.Id !== envio.Id);
-            this.cdr.detectChanges();
-          }, 1500);
-        }
+        envio.Estado_Nombre = nombreEstadoEnvio(estadoIdNum);
         this.cdr.detectChanges();
         alert('Estado actualizado correctamente');
       },
@@ -154,24 +152,17 @@ export class Employee implements OnInit {
           const envio = this.enviosActivos.find(e => e.Id === id);
           if (envio) {
             envio.Estado_Envio_Id = estadoIdNum;
-            envio.Estado_Nombre = this.estadosValidos.find(e => e.id === estadoIdNum)?.nombre || '';
+            envio.Estado_Nombre = nombreEstadoEnvio(estadoIdNum);
           }
-          if (++done + errs === ids.length) this.finalizeBulk(done, errs, estadoIdNum);
+          if (++done + errs === ids.length) this.finalizeBulk(done, errs);
         },
-        error: () => { if (done + ++errs === ids.length) this.finalizeBulk(done, errs, estadoIdNum); }
+        error: () => { if (done + ++errs === ids.length) this.finalizeBulk(done, errs); }
       });
     });
   }
 
-  private finalizeBulk(done: number, errs: number, estadoIdNum: number) {
+  private finalizeBulk(done: number, errs: number) {
     this.bulkLoading = false;
-    if (estadoIdNum === 5 || estadoIdNum === 6) {
-      // Remove those that were successfully updated to a final state
-      this.enviosActivos = this.enviosActivos.filter(e => {
-        const isSelected = this.selectedIds.has(e.Id);
-        return !(isSelected && e.Estado_Envio_Id === estadoIdNum);
-      });
-    }
     this.selectedIds.clear();
     this.bulkEstado = '';
     this.cdr.detectChanges();

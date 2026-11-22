@@ -11,10 +11,10 @@ import { RouterLink } from '@angular/router';
 })
 export class HomeComponent implements OnInit, OnDestroy {
   slides = [
-    '/hero-ship.png',
-    '/hero-warehouse.png',
-    '/hero-plane.png',
-    '/hero-truck.png'
+    '/Barco%20jami.jpeg',
+    '/Barco%20jami2.jpeg',
+    '/Carga%20Jami.jpeg',
+    '/Furgoneta%20Jami.jpeg'
   ];
   currentSlideIndex = 0;
   slideInterval: any;
@@ -105,6 +105,34 @@ export class HomeComponent implements OnInit, OnDestroy {
       icon: '🚚',
       title: 'Servicio Puerta a Puerta',
       text: 'Recogemos y entregamos tus envíos donde lo necesites.'
+    }
+  ];
+
+  faqs = [
+    {
+      icon: '📦',
+      question: '¿Qué incluye el precio de las cajas de 80x50x50 desde 100€?',
+      answer: 'El precio base desde 100€ incluye la entrega en almacén. Para entregas en otros destinos o modalidades específicas pueden aplicarse tarifas adicionales que te confirmamos al momento de cotizar.'
+    },
+    {
+      icon: '🚚',
+      question: '¿Cómo funciona la recogida a domicilio en Barcelona y alrededores?',
+      answer: 'Nos desplazamos directamente a tu domicilio en Barcelona, Sabadell, Terrassa, L’Hospitalet, Ripollet y todo el Vallès Occidental para recoger tus cajas, tanques o bultos sin que tengas que cargar con nada.'
+    },
+    {
+      icon: '⏱️',
+      question: '¿Cuánto tiempo tarda en llegar el envío a la República Dominicana?',
+      answer: 'El tiempo estimado de transporte marítimo transatlántico garantiza un flujo constante y seguro. Te informamos de las fechas estimadas de salida y llegada exacta al coordinar tu bulto.'
+    },
+    {
+      icon: '📍',
+      question: '¿A qué zonas de la República Dominicana llega la entrega?',
+      answer: 'Realizamos entregas en Santo Domingo (incluyendo Santo Domingo Este), Santiago y todo el territorio nacional de la República Dominicana con nuestra propia logística.'
+    },
+    {
+      icon: '🛋️',
+      question: '¿También gestionáis mudanzas completas y electrodomésticos?',
+      answer: 'Sí. Además de nuestras cajas de 80×50 cm y tanques/bidones azules herméticos, somos especialistas en trasladar electrodomésticos, muebles y mudanzas de hogar integrales.'
     }
   ];
 

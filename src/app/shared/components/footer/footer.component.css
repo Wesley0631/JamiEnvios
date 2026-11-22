@@ -39,6 +39,19 @@
     border-top: 1px solid rgba(255, 255, 255, 0.12);
     color: rgba(255, 255, 255, 0.78);
   }
+
+  .funding-strip {
+    display: flex;
+    justify-content: center;
+    padding: 12px 20px;
+    background: #fff;
+  }
+
+  .funding-strip-image {
+    display: block;
+    width: min(100%, 1196px);
+    height: auto;
+  }
   
   @media (max-width: 980px) {
     .footer-grid {

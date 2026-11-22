@@ -7,3 +7,111 @@
   .layout-content {
     flex: 1;
   }
+
+  .whatsapp-widget {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .whatsapp-label {
+    position: relative;
+    padding: 11px 16px;
+    border-radius: 12px;
+    background: #fff;
+    color: #17335f;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+    font-size: 0.9rem;
+    font-weight: 700;
+    white-space: nowrap;
+    animation: whatsapp-label-cycle 10s ease-in-out infinite;
+  }
+
+  .whatsapp-label::after {
+    position: absolute;
+    top: 50%;
+    right: -7px;
+    width: 14px;
+    height: 14px;
+    background: #fff;
+    content: '';
+    transform: translateY(-50%) rotate(45deg);
+  }
+
+  .whatsapp-float {
+    display: grid;
+    width: 60px;
+    height: 60px;
+    place-items: center;
+    border-radius: 50%;
+    background: #25d366;
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+    transition: background-color 0.2s ease, transform 0.2s ease;
+  }
+
+  .whatsapp-float:hover {
+    transform: translateY(-3px);
+    background: #1ebe5d;
+  }
+
+  .whatsapp-float:focus-visible {
+    outline: 3px solid #128c7e;
+    outline-offset: 4px;
+  }
+
+  .whatsapp-float svg {
+    width: 34px;
+    height: 34px;
+  }
+
+  @keyframes whatsapp-label-cycle {
+    0%,
+    35% {
+      visibility: visible;
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    40%,
+    100% {
+      visibility: hidden;
+      opacity: 0;
+      transform: translateX(8px);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .whatsapp-label {
+      animation: none;
+      visibility: visible;
+      opacity: 1;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .whatsapp-widget {
+      right: 16px;
+      bottom: 16px;
+      gap: 10px;
+    }
+
+    .whatsapp-label {
+      padding: 9px 12px;
+      font-size: 0.82rem;
+    }
+
+    .whatsapp-float {
+      width: 54px;
+      height: 54px;
+    }
+
+    .whatsapp-float svg {
+      width: 30px;
+      height: 30px;
+    }
+  }

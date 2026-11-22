@@ -41,6 +41,18 @@ export interface AdminEnvio {
   Usuario_Id: number;
 }
 
+export function nombreEstadoEnvio(estadoId: number): string {
+  switch (estadoId) {
+    case 1: return 'Pendiente';
+    case 2: return 'En Tránsito';
+    case 3: return 'En Aduana';
+    case 4: return 'En Reparto';
+    case 5: return 'Entregado';
+    case 6: return 'Cancelado';
+    default: return 'Estado desconocido';
+  }
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -77,7 +89,7 @@ export class AdminService {
     return this.http.get<AdminEnvio[]>(`${this.apiUrl}/envios`, { params });
   }
 
-  updateEstadoEnvio(id: number, estado_id: number): Observable<any> {
+  updateEstadoEnvio(id: number, estado_id: number): Observable<unknown> {
     return this.http.put(`http://localhost:3000/api/envios/${id}/estado`, { estado_id });
   }
 

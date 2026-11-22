@@ -27,6 +27,18 @@ const config = {
     }
 };
 
+const estadoEnvioSql = column => `
+    CASE ${column}
+        WHEN 1 THEN N'Pendiente'
+        WHEN 2 THEN N'En Tránsito'
+        WHEN 3 THEN N'En Aduana'
+        WHEN 4 THEN N'En Reparto'
+        WHEN 5 THEN N'Entregado'
+        WHEN 6 THEN N'Cancelado'
+        ELSE N'Estado desconocido'
+    END
+`;
+
 sql.connect(config)
     .then(async () => {
         console.log("Conectado a SQL Server");
@@ -67,6 +79,48 @@ END`);
                 await request.query(`DECLARE @mx INT; SELECT @mx = MAX(Id) FROM Roles; DBCC CHECKIDENT('Roles', RESEED, ISNULL(@mx, 0));`);
                 console.log('Default roles seeded');
             }
+
+            await request.query(`
+                IF OBJECT_ID('dbo.EstadosEnvio', 'U') IS NULL
+                BEGIN
+                    CREATE TABLE dbo.EstadosEnvio (
+                        Id INT PRIMARY KEY,
+                        Nombre VARCHAR(50) NOT NULL,
+                        Activo BIT NOT NULL DEFAULT 1
+                    );
+                END
+
+                DECLARE @estadoIdEsIdentity BIT = 0;
+                SELECT @estadoIdEsIdentity = is_identity
+                FROM sys.columns
+                WHERE object_id = OBJECT_ID('dbo.EstadosEnvio') AND name = 'Id';
+
+                BEGIN TRY
+                    IF @estadoIdEsIdentity = 1
+                        SET IDENTITY_INSERT dbo.EstadosEnvio ON;
+
+                    IF NOT EXISTS (SELECT 1 FROM dbo.EstadosEnvio WHERE Id = 1)
+                        INSERT INTO dbo.EstadosEnvio (Id, Nombre, Activo) VALUES (1, 'Pendiente', 1);
+                    IF NOT EXISTS (SELECT 1 FROM dbo.EstadosEnvio WHERE Id = 2)
+                        INSERT INTO dbo.EstadosEnvio (Id, Nombre, Activo) VALUES (2, 'En Tránsito', 1);
+                    IF NOT EXISTS (SELECT 1 FROM dbo.EstadosEnvio WHERE Id = 3)
+                        INSERT INTO dbo.EstadosEnvio (Id, Nombre, Activo) VALUES (3, 'En Aduana', 1);
+                    IF NOT EXISTS (SELECT 1 FROM dbo.EstadosEnvio WHERE Id = 4)
+                        INSERT INTO dbo.EstadosEnvio (Id, Nombre, Activo) VALUES (4, 'En Reparto', 1);
+                    IF NOT EXISTS (SELECT 1 FROM dbo.EstadosEnvio WHERE Id = 5)
+                        INSERT INTO dbo.EstadosEnvio (Id, Nombre, Activo) VALUES (5, 'Entregado', 0);
+                    IF NOT EXISTS (SELECT 1 FROM dbo.EstadosEnvio WHERE Id = 6)
+                        INSERT INTO dbo.EstadosEnvio (Id, Nombre, Activo) VALUES (6, 'Cancelado', 0);
+
+                    IF @estadoIdEsIdentity = 1
+                        SET IDENTITY_INSERT dbo.EstadosEnvio OFF;
+                END TRY
+                BEGIN CATCH
+                    IF @estadoIdEsIdentity = 1
+                        SET IDENTITY_INSERT dbo.EstadosEnvio OFF;
+                    THROW;
+                END CATCH
+            `);
 
             // Ensure Envios has the current schema expected by the app
             try {
@@ -306,9 +360,8 @@ app.get('/api/admin/envios', async (req, res) => {
     try {
         const limit = req.query.limit ? parseInt(req.query.limit) : 100;
         let query = `
-            SELECT e.*, ee.Nombre as Estado_Nombre, ee.Activo 
+            SELECT e.*, ${estadoEnvioSql('e.Estado_Envio_Id')} AS Estado_Nombre
             FROM Envios e
-            LEFT JOIN EstadosEnvio ee ON e.Estado_Envio_Id = ee.Id
             WHERE 1=1
         `;
         
@@ -321,7 +374,7 @@ app.get('/api/admin/envios', async (req, res) => {
         
         if (req.query.estado) {
             if (req.query.estado === 'Activos') {
-                query += ` AND ee.Activo = 1`;
+                query += ` AND e.Estado_Envio_Id IN (1, 2, 3, 4)`;
             } else {
                 query += ` AND e.Estado_Envio_Id = @estadoId`;
                 request.input('estadoId', sql.Int, parseInt(req.query.estado));
@@ -359,7 +412,15 @@ app.get('/api/admin/envios', async (req, res) => {
         }
 
         if (req.query.usuarioId) {
-            query += ` AND e.Usuario_Id = @usuarioId`;
+            query += ` AND (
+                e.Usuario_Id = @usuarioId
+                OR EXISTS (
+                    SELECT 1
+                    FROM Usuarios u
+                    WHERE u.Id = @usuarioId
+                      AND u.DocumentodeIdentidad = e.DocumentodeIdentidad
+                )
+            )`;
             request.input('usuarioId', sql.Int, req.query.usuarioId);
         }
 
@@ -380,9 +441,8 @@ app.get('/api/envios/tracking/:numero_guia', async (req, res) => {
         const request = new sql.Request();
         request.input('numero_guia', sql.VarChar, numero_guia);
         const result = await request.query(`
-            SELECT TOP 1 e.*, ee.Nombre as Estado_Nombre 
+            SELECT TOP 1 e.*, ${estadoEnvioSql('e.Estado_Envio_Id')} AS Estado_Nombre
             FROM Envios e
-            LEFT JOIN EstadosEnvio ee ON e.Estado_Envio_Id = ee.Id
             WHERE e.Numero_Guia LIKE '%' + @numero_guia + '%'
             ORDER BY e.Id DESC
         `);
@@ -397,25 +457,39 @@ app.get('/api/envios/tracking/:numero_guia', async (req, res) => {
 
 app.put('/api/envios/:id/estado', async (req, res) => {
     try {
-        const { id } = req.params;
-        const { estado_id } = req.body;
+        const envioId = Number(req.params.id);
+        const estadoId = Number(req.body.estado_id);
 
-        if (!estado_id) {
-            return res.status(400).json({ error: "El estado_id es requerido" });
+        if (!Number.isInteger(envioId) || envioId <= 0 || !Number.isInteger(estadoId) || estadoId <= 0) {
+            return res.status(400).json({ error: "El ID del envío y estado_id deben ser enteros positivos" });
+        }
+
+        if (estadoId > 6) {
+            return res.status(400).json({ error: "El estado indicado no existe" });
         }
 
         const request = new sql.Request();
+        request.input('envioId', sql.Int, envioId);
+        request.input('estadoId', sql.Int, estadoId);
         const result = await request.query(`
             UPDATE Envios 
-            SET Estado_Envio_Id = ${estado_id} 
-            WHERE Id = ${id}
+            SET Estado_Envio_Id = @estadoId
+            WHERE Id = @envioId
         `);
 
         if (result.rowsAffected[0] === 0) {
             return res.status(404).json({ error: "Envío no encontrado" });
         }
 
-        res.json({ mensaje: "Estado actualizado correctamente" });
+        const updatedRequest = new sql.Request();
+        updatedRequest.input('envioId', sql.Int, envioId);
+        const updatedResult = await updatedRequest.query(`
+            SELECT e.*, ${estadoEnvioSql('e.Estado_Envio_Id')} AS Estado_Nombre
+            FROM Envios e
+            WHERE e.Id = @envioId
+        `);
+
+        res.json(updatedResult.recordset[0]);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -514,15 +588,23 @@ app.post('/api/envios', async (req, res) => {
 
         let clienteUsuarioId = null;
 
-        // Verify if user exists with DocumentodeIdentidad and Nombre
-        if (DocumentodeIdentidad && Nombre_Cliente) {
+        // Link the shipment to a customer by their unique document when available.
+        if (DocumentodeIdentidad) {
             const checkUserRequest = new sql.Request();
             checkUserRequest.input('doc', sql.VarChar, DocumentodeIdentidad);
-            checkUserRequest.input('nombre', sql.VarChar, Nombre_Cliente);
             const userRes = await checkUserRequest.query(`
-                SELECT Id FROM Usuarios WHERE DocumentodeIdentidad = @doc AND Nombre = @nombre
+                SELECT Id FROM Usuarios WHERE DocumentodeIdentidad = @doc
             `);
             if (userRes.recordset.length > 0) {
+                clienteUsuarioId = userRes.recordset[0].Id;
+            }
+        } else if (Nombre_Cliente) {
+            const checkUserRequest = new sql.Request();
+            checkUserRequest.input('nombre', sql.VarChar, Nombre_Cliente);
+            const userRes = await checkUserRequest.query(`
+                SELECT TOP 2 Id FROM Usuarios WHERE Nombre = @nombre
+            `);
+            if (userRes.recordset.length === 1) {
                 clienteUsuarioId = userRes.recordset[0].Id;
             }
         }

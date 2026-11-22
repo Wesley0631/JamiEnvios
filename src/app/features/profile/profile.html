@@ -24,6 +24,9 @@
     <div class="card">
       <div class="card-header">
         <h2>Historial de Envíos</h2>
+        <button class="btn btn-outline" type="button" (click)="loadHistorial()" [disabled]="loading">
+          {{ loading ? 'Actualizando...' : 'Actualizar' }}
+        </button>
       </div>
       <div class="card-body">
         @if (loading) {
@@ -50,8 +53,8 @@
                     <td>{{ envio.Destino }}</td>
                     <td>{{ envio.Fecha_Recepcion | date:'dd/MM/yyyy' }}</td>
                     <td>
-                      <span class="status-badge" [class]="(envio.Estado_Nombre || envio.Estado_Actual || '').toLowerCase().replace(' ', '-')">
-                        {{ envio.Estado_Nombre || envio.Estado_Actual }}
+                      <span class="status-badge" [class]="estadoNombre(envio).toLowerCase().replace(' ', '-')">
+                        {{ estadoNombre(envio) }}
                       </span>
                     </td>
                   </tr>
