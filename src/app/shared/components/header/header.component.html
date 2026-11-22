@@ -17,15 +17,25 @@
         Inicio
       </a>
 
+      <a routerLink="/nosotros" routerLinkActive="active" (click)="closeMenu()">
+        Sobre nosotros
+      </a>
+
+      <a routerLink="/historia" routerLinkActive="active" (click)="closeMenu()">
+        Historia
+      </a>
+
       <a routerLink="/servicios" routerLinkActive="active" (click)="closeMenu()">
         Servicios
       </a>
       <a routerLink="/" fragment="preguntas-frecuentes" (click)="closeMenu()">
         Preguntas frecuentes
       </a>
+      <!--
       <a routerLink="/rastreo" routerLinkActive="active" (click)="closeMenu()">
         Rastreo
       </a>
+      -->
 
       @if (isAdmin) {
         <a routerLink="/admin" routerLinkActive="active" class="admin-nav-link" (click)="closeMenu()" style="color: #f59e0b; font-weight: bold; margin-left: 10px; border: 1px dashed #f59e0b; padding: 5px; border-radius: 5px;">
@@ -39,7 +49,7 @@
         </a>
       }
 
-
+      <!--
       @if (isLoggedIn) {
         <a routerLink="/perfil" class="user-icon-link" aria-label="Mi perfil" title="Mi perfil" (click)="closeMenu()">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="user-icon">
@@ -55,12 +65,20 @@
           </svg>
         </a>
       }
-
+      -->
+      <!--
       @if (!isAdmin && !isEmployee) {
-        <a class="cta-link" routerLink="/contacto" (click)="closeMenu()">
+        <a
+          class="cta-link"
+          href="https://wa.me/34695820526?text=Hola%2C%20quisiera%20solicitar%20una%20cotizaci%C3%B3n."
+          target="_blank"
+          rel="noopener noreferrer"
+          (click)="closeMenu()"
+        >
           Solicita Cotización
         </a>
       }
+      -->
     </nav>
   </div>
 </header>
